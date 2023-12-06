@@ -1,0 +1,36 @@
+The source code of the fisher_py package has to be modified so that peak-piked (i.e. centroided) data is not shown in the bottom plot (the spectra).
+
+The modification is in the raw_file.py file in the fisher_py folder.
+The function: def _get_scan_(self, scan_number: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+is modified as follows (where added code and commented out code are indicated).
+
+    def _get_scan_(self, scan_number: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        mass_analyzer = self._raw_file_access.get_scan_event_for_scan_number(scan_number).mass_analyzer
+
+        # This block is added code
+        #   This allows the non-centroided data to be returned regardless of the mass analyzer type.
+        stats = self._raw_file_access.get_scan_stats_for_scan_number(scan_number)
+        spectrum = self._raw_file_access.get_segmented_scan_from_scan_number(scan_number, stats)
+        positions = np.array(spectrum.positions)
+        intensities = np.array(spectrum.intensities)
+        charges = np.zeros(positions.shape)
+
+        # This block is original source code that is commented out
+        # if mass_analyzer == MassAnalyzerType.MassAnalyzerFTMS:
+        #     spectrum = self._raw_file_access.get_centroid_stream(scan_number, False)
+        #     positions = np.array(spectrum.masses)
+        #     intensities = np.array(spectrum.intensities)
+        #     charges = np.array(spectrum.charges)
+
+        # else:
+        #     stats = self._raw_file_access.get_scan_stats_for_scan_number(scan_number)
+        #     spectrum = self._raw_file_access.get_segmented_scan_from_scan_number(scan_number, stats)
+        #     positions = np.array(spectrum.positions)
+        #     intensities = np.array(spectrum.intensities)
+        #     charges = np.zeros(positions.shape)
+        return positions, intensities, charges
+
+Ideally the behavior of this method of the class RawFile can be modified without modifying source code. That way the package can be imported as-is.
+A potential solution may be: https://stackoverflow.com/questions/9455111/define-a-method-outside-of-class-definition
+The other solution is to pack the whole modified fisher_py package with the bokeh tool.
+The modified fisher_py is in the folder with this text file.
