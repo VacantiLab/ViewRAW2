@@ -2,7 +2,7 @@ from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource
 from bokeh.layouts import column
 from bokeh.io import curdoc
-from bokeh.models import TextInput
+from bokeh.models import TextInput, NumeralTickFormatter, PrintfTickFormatter
 from bokeh.events import DoubleTap, Tap
 
 from fisher_py import RawFile
@@ -18,7 +18,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 # Change the working directory
 os.chdir(dir_path)
 
-filename = 'YY2019060827.raw'
+filename = '/Users/nate/Dropbox/Research/Vacanti_Laboratory/projects/DNS_MassSpectrometry/ReadRawFile/ViewRAW/YY2019060827.raw'
 raw_file = RawFile(filename)
 
 
@@ -36,7 +36,19 @@ data = ColumnDataSource(data=dict(
 # Create a figure for the line plot
 p1 = figure(width=1200, height=400, title='Line plot')
 # Add a line glyph to the line plot
-p1.line('x', 'y', source=data)
+p1.line('x', 'y', source=data, line_width=2)
+p1.xaxis.axis_line_width = 3
+p1.yaxis.axis_line_width = 3
+p1.xaxis.major_tick_line_width = 3
+p1.yaxis.major_tick_line_width = 3
+p1.xaxis.minor_tick_line_color = None
+p1.yaxis.minor_tick_line_color = None
+p1.xgrid.grid_line_color = None
+p1.ygrid.grid_line_color = None
+p1.outline_line_color = None
+p1.xaxis.major_label_text_font_size = "12pt"
+p1.yaxis.major_label_text_font_size = "12pt"
+p1.yaxis[0].formatter = PrintfTickFormatter(format="%.1e")
 
 
 # Define the data for the bar plot
@@ -51,7 +63,19 @@ data2 = ColumnDataSource(data=dict(
 p2 = figure(width=1200, height=400, title='Bar plot')
 # Add a vbar glyph to the bar plot with a smaller width
 #p2.vbar(x='x', top='y', width=0.002, source=data2)  # set width to 0.1
-p2.line('x', 'y', source=data2)
+p2.line('x', 'y', source=data2, line_width=2)
+p2.xaxis.axis_line_width = 3
+p2.yaxis.axis_line_width = 3
+p2.xaxis.major_tick_line_width = 3
+p2.yaxis.major_tick_line_width = 3
+p2.xaxis.minor_tick_line_color = None
+p2.yaxis.minor_tick_line_color = None
+p2.xgrid.grid_line_color = None
+p2.ygrid.grid_line_color = None
+p2.outline_line_color = None
+p2.xaxis.major_label_text_font_size = "12pt"
+p2.yaxis.major_label_text_font_size = "12pt"
+p2.yaxis[0].formatter = PrintfTickFormatter(format="%.1e")
 
 # Create TextInput widgets for target_mass and mass_tolerance_ppm
 target_mass_input = TextInput(value=str(target_mass), title="Target Mass:")
