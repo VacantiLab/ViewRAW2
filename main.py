@@ -10,23 +10,29 @@ from fisher_py.data.business import TraceType, Scan
 import numpy as np
 import os
 
+import tkinter as tk
+from tkinter import filedialog
+
 from pdb import set_trace
 
-# Get the absolute path of the directory of the script
-dir_path = os.path.dirname(os.path.realpath(__file__))
 
-# Change the working directory
-os.chdir(dir_path)
+def select_file():
+    root = tk.Tk()
+    root.withdraw()  # Hide the main window
+    filename = filedialog.askopenfilename()  # Show the file dialog and get the selected file path
+    return filename
 
-filename = '/Users/nate/Dropbox/Research/Vacanti_Laboratory/projects/DNS_MassSpectrometry/ReadRawFile/ViewRAW/YY2019060827.raw'
+filename = select_file()
 raw_file = RawFile(filename)
 
 
-target_mass = 205.098
-mass_tolerance_ppm = 1e11
-rt, i = raw_file.get_chromatogram(target_mass, mass_tolerance_ppm,TraceType.MassRange)
-mz, i2, charges, real_rt = raw_file.get_scan_ms1(5.7)
-a_scanned_mass = mz[0]
+initial_retention_time = raw_file._retention_times[0]
+mz, i2, charges, real_rt = raw_file.get_scan_ms1(initial_retention_time)
+initial_target_mass = round((mz[len(mz)-1] - mz[0])/2)
+a_scanned_mass = initial_target_mass
+
+initial_mass_tolerance_ppm = 1e11 # use an enormous mass tolerance to get the TIC
+rt, i = raw_file.get_chromatogram(initial_target_mass, initial_mass_tolerance_ppm,TraceType.MassRange)
 
 # Define the data for the plots
 data = ColumnDataSource(data=dict(
@@ -38,6 +44,7 @@ data = ColumnDataSource(data=dict(
 p1 = figure(width=1200, height=400, title='Chromatograph')
 # Add a line glyph to the line plot
 p1.line('x', 'y', source=data, line_width=2)
+# change aesthetics
 p1.xaxis.axis_line_width = 3
 p1.yaxis.axis_line_width = 3
 p1.xaxis.major_tick_line_width = 3
@@ -59,12 +66,11 @@ data2 = ColumnDataSource(data=dict(
     width=[0.5]*len(mz)
 ))
 
-# Create a figure for the bar plot
-# Create a figure for the bar plot
-p2 = figure(width=1200, height=400, title='Mass Sepctrum')
-# Add a vbar glyph to the bar plot with a smaller width
-#p2.vbar(x='x', top='y', width=0.002, source=data2)  # set width to 0.1
+# Create a figure for the mass spectru plot
+p2 = figure(width=1200, height=400, title='Mass Spectrum')
+# Add a line glyph to the line plot
 p2.line('x', 'y', source=data2, line_width=2)
+# change aesthetics
 p2.xaxis.axis_line_width = 3
 p2.yaxis.axis_line_width = 3
 p2.xaxis.major_tick_line_width = 3
@@ -85,12 +91,12 @@ mass_tolerance_ppm_input = TextInput(value=str('NA'), title="Mass Tolerance PPM:
 # Define a function to update the data source for the plots
 def update_data_source(attr, old, new, a_scanned_mass=a_scanned_mass):
     if target_mass_input.value == 'TIC':
-        target_mass = a_scanned_mass
+        target_mass = 200
         mass_tolerance_ppm = 1e11
     if target_mass_input.value != 'TIC':
         mass_tolerance_ppm = mass_tolerance_ppm_input.value
         if mass_tolerance_ppm == 'NA':
-            mass_tolerance_ppm = 10
+            mass_tolerance_ppm = 1e11
         target_mass = float(target_mass_input.value)
         mass_tolerance_ppm = float(mass_tolerance_ppm)
     rt, i = raw_file.get_chromatogram(target_mass, mass_tolerance_ppm,TraceType.MassRange)
