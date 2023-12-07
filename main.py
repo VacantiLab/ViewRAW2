@@ -23,9 +23,10 @@ raw_file = RawFile(filename)
 
 
 target_mass = 205.098
-mass_tolerance_ppm = 10
+mass_tolerance_ppm = 1e11
 rt, i = raw_file.get_chromatogram(target_mass, mass_tolerance_ppm,TraceType.MassRange)
 mz, i2, charges, real_rt = raw_file.get_scan_ms1(5.7)
+a_scanned_mass = mz[0]
 
 # Define the data for the plots
 data = ColumnDataSource(data=dict(
@@ -34,7 +35,7 @@ data = ColumnDataSource(data=dict(
 ))
 
 # Create a figure for the line plot
-p1 = figure(width=1200, height=400, title='Line plot')
+p1 = figure(width=1200, height=400, title='Chromatograph')
 # Add a line glyph to the line plot
 p1.line('x', 'y', source=data, line_width=2)
 p1.xaxis.axis_line_width = 3
@@ -60,7 +61,7 @@ data2 = ColumnDataSource(data=dict(
 
 # Create a figure for the bar plot
 # Create a figure for the bar plot
-p2 = figure(width=1200, height=400, title='Bar plot')
+p2 = figure(width=1200, height=400, title='Mass Sepctrum')
 # Add a vbar glyph to the bar plot with a smaller width
 #p2.vbar(x='x', top='y', width=0.002, source=data2)  # set width to 0.1
 p2.line('x', 'y', source=data2, line_width=2)
@@ -78,13 +79,20 @@ p2.yaxis.major_label_text_font_size = "12pt"
 p2.yaxis[0].formatter = PrintfTickFormatter(format="%.1e")
 
 # Create TextInput widgets for target_mass and mass_tolerance_ppm
-target_mass_input = TextInput(value=str(target_mass), title="Target Mass:")
-mass_tolerance_ppm_input = TextInput(value=str(mass_tolerance_ppm), title="Mass Tolerance PPM:")
+target_mass_input = TextInput(value=str('TIC'), title="Target Mass:")
+mass_tolerance_ppm_input = TextInput(value=str('NA'), title="Mass Tolerance PPM:")
 
 # Define a function to update the data source for the plots
-def update_data_source(attr, old, new):
-    target_mass = float(target_mass_input.value)
-    mass_tolerance_ppm = float(mass_tolerance_ppm_input.value)
+def update_data_source(attr, old, new, a_scanned_mass=a_scanned_mass):
+    if target_mass_input.value == 'TIC':
+        target_mass = a_scanned_mass
+        mass_tolerance_ppm = 1e11
+    if target_mass_input.value != 'TIC':
+        mass_tolerance_ppm = mass_tolerance_ppm_input.value
+        if mass_tolerance_ppm == 'NA':
+            mass_tolerance_ppm = 10
+        target_mass = float(target_mass_input.value)
+        mass_tolerance_ppm = float(mass_tolerance_ppm)
     rt, i = raw_file.get_chromatogram(target_mass, mass_tolerance_ppm,TraceType.MassRange)
     mz, i2, charges, real_rt = raw_file.get_scan_ms1(5.7)
     data.data = dict(x=rt, y=i)
