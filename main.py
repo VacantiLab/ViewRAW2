@@ -1,3 +1,5 @@
+from pdb import set_trace
+
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource
 from bokeh.layouts import column
@@ -13,9 +15,6 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 
-from pdb import set_trace
-
-
 def select_file():
     root = tk.Tk()
     root.withdraw()  # Hide the main window
@@ -24,6 +23,7 @@ def select_file():
 
 filename = select_file()
 raw_file = RawFile(filename)
+
 
 
 initial_retention_time = raw_file._retention_times[0]
@@ -41,7 +41,7 @@ data = ColumnDataSource(data=dict(
 ))
 
 # Create a figure for the line plot
-p1 = figure(width=1200, height=400, title='Chromatograph')
+p1 = figure(width=900, height=300, title='Chromatograph')
 # Add a line glyph to the line plot
 p1.line('x', 'y', source=data, line_width=2)
 # change aesthetics
@@ -67,7 +67,7 @@ data2 = ColumnDataSource(data=dict(
 ))
 
 # Create a figure for the mass spectru plot
-p2 = figure(width=1200, height=400, title='Mass Spectrum')
+p2 = figure(width=900, height=300, title='Mass Spectrum')
 # Add a line glyph to the line plot
 p2.line('x', 'y', source=data2, line_width=2)
 # change aesthetics
